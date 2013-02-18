@@ -7,8 +7,30 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+
+    if session[:ratings].nil?
+      @movies = Movie.find(:all)
+    end
+    
+    selected_ratings = session[:ratings] || param[:ratings]
+    @all_ratings = ['G','PG','PG-13','R']
+
+    sort = params[:sort] || session[:sort]
+    case sort
+      when 'title'
+      @movies = Movie.order('title')
+      when 'release_date'
+      @movies = Movie.order('release_date')
+    end 
+
+    @movies = Movie.where('rating in (?)', params[:ratings].keys) if params["ratings"]
+
+    session[:sort] = sort
+    if selected_ratings != {}
+      session[:ratings] = selected_ratings
+    end
   end
+
 
   def new
     # default: render 'new' template
